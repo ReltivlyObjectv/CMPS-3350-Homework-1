@@ -44,7 +44,7 @@
 #define WINDOW_WIDTH  800
 #define WINDOW_HEIGHT 600
 
-#define MAX_PARTICLES 1
+#define MAX_PARTICLES 1000
 #define GRAVITY 0.1
 
 //X Windows variables
@@ -81,7 +81,6 @@ class Game {
 		box.center.x = 120 + 5*65;
 		box.center.y = 500 - 5*60;
 	}
-
 };
 
 //Function prototypes
@@ -121,7 +120,7 @@ int main(void) {
 void set_title(void) {
 	//Set the window title bar.
 	XMapWindow(dpy, win);
-	XStoreName(dpy, win, "335 Lab1   LMB for particle");
+	XStoreName(dpy, win, "3350 Homework 1");
 }
 
 void cleanupXWindows(void) {
@@ -181,7 +180,7 @@ void makeParticle(Game *game, int x, int y) {
 	//position of particle
 	Particle *p = &game->particle[game->n];
 	p->s.center.x = x;
-	p->s.center.y = y;
+	p->s.center.y = WINDOW_HEIGHT - y;
 	p->velocity.y = rnd()*2 - 1.0;
 	p->velocity.x = rnd()*2 - 1.0;
 	game->n++;
@@ -256,6 +255,7 @@ void movement(Game *game) {
 				p->s.center.x > s->center.x - s->width &&
 				p->s.center.x < s->center.x + s->width
 				){
+		    p->s.center.y = s->center.y + s->height;
 			p->velocity.y *= -0.5;
 			//p->s.center.x += p->velocity.x;
 			//p->s.center.y += p->velocity.y;
