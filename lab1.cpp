@@ -255,9 +255,6 @@ int check_keys(XEvent *e, Game *game) {
 			return 1;
 		}
 		//You may check other keys here.
-
-
-
 	}
 	return 0;
 }
@@ -343,7 +340,7 @@ void render(Game *game) {
 	for(std::list<Particle*>::iterator it = game->particles.begin(); it != game->particles.end(); it++){
 		Particle *p = *it;
 	    	glPushMatrix();
-		glColor3ub(150,160,220);
+		glColor3ub((rand() % 20) + 150,(rand() % 20) + 160,(rand() % 20) + 220);
 		Vec *c = &(p->s.center);
 		w = 2;
 		h = 2;
@@ -395,8 +392,18 @@ Shape* getContainingShape(float x, float y, float z, bool inclusive) {
 			}
 		}else {
 			//Circle
-			//TODO
-			return nullptr;
+			Shape shape = *(*it);
+			float radius = shape.radius;
+			float length = sqrt(pow(x + shape.center.x, 2) + pow(y + shape.center.y, 2));
+			if(inclusive){
+				if(radius >= length){
+					return *it;
+				}
+			}else{
+				if(radius > length){
+					return *it;
+				}
+			}
 		}
 	}
 	return nullptr;
