@@ -47,7 +47,7 @@
 
 #define MAX_PARTICLES 1000
 #define GRAVITY 0.1
-#define WATER_FLOW 0.01
+#define WATER_FLOW 0.005
 
 //X Windows variables
 Display *dpy;
@@ -78,14 +78,18 @@ class Game {
 		int n;
 		Game(){
 			n=0;
-			//declare a box shape
-			Shape *newBox = new Shape();
-			newBox->width = 100;
-			newBox->height = 10;
-			newBox->center.x = 120 + 5*65;
-			newBox->center.y = 500 - 5*60;
-			newBox->isCircle = false;
-			shapes.push_back(newBox);
+			//Create Shapes
+			for(int i = 0; i < 5; i++){
+				Shape *box = new Shape();
+				box->width = 100;
+				box->height = 20;
+				//newBox->center.x = 120 + 5*65;
+				//newBox->center.y = 500 - 5*60;
+				box->center.x = 120 + (100 * i);
+				box->center.y = 500 - (75 * i);
+				box->isCircle = false;
+				shapes.push_back(box);
+			}
 		}
 };
 
@@ -181,10 +185,8 @@ void init_opengl(void) {
 void makeParticle(Game *game, int x, int y) {
 	if (game->n >= MAX_PARTICLES){
 		return;
-	}else if(isInShape((float) x, (float) y)){
-		std::cout << "makeParticle() cursor is inside box" << std::endl;
-		return;
 	}
+
 	std::cout << "makeParticle() " << x << " " << y << std::endl;
 	//position of particle
 	//Particle *p = &game->particle[game->n];
@@ -251,8 +253,9 @@ int check_keys(XEvent *e, Game *game) {
 
 void movement(Game *game) {
 
-	if (game->n <= 0)
+	if (game->n <= 0){
 		return;
+	}
 	//for(int i = 0; i < game->n; i++){
 	for(std::list<Particle*>::iterator it = game->particles.begin(); it != game->particles.end(); ){
 		Particle *p = *it;
@@ -266,9 +269,12 @@ void movement(Game *game) {
 		Shape *s = getContainingShape(p->s.center.x, p->s.center.y);
 		if(s != nullptr){
 			if(s->isCircle){
+				//TODO
 			}else{
-	    			p->s.center.y = s->center.y + s->height;
-				p->velocity.y *= -0.5;
+				if(p->s.center.y > s->center.y){
+	    				p->s.center.y = s->center.y + s->height;
+					p->velocity.y *= -0.5;
+				}
 			}
 		}
 		//check for off-screen
