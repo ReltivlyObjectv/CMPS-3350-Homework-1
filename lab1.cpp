@@ -45,9 +45,13 @@
 #define WINDOW_WIDTH  800
 #define WINDOW_HEIGHT 600
 
-#define MAX_PARTICLES 1000
+#define MAX_PARTICLES 5000
 #define GRAVITY 0.1
 #define WATER_FLOW 0.005
+
+#define NATURAL_FLOW_Y 50
+#define NATURAL_FLOW_X 100
+#define NATURAL_FLOW_AMOUNT 25
 
 //X Windows variables
 Display *dpy;
@@ -90,6 +94,12 @@ class Game {
 				box->isCircle = false;
 				shapes.push_back(box);
 			}
+			Shape *circle = new Shape();
+			circle->radius = 150;
+			circle->isCircle = true;
+			circle->center.x = 800;
+			circle->center.y = 0;
+			shapes.push_back(circle);
 		}
 };
 
@@ -103,6 +113,7 @@ void movement(Game *game);
 void render(Game *game);
 bool isInShape(float x, float y, float z=0, bool inclusive=true);
 Shape *getContainingShape(float x, float y, float z=0, bool inclusive=true);
+void makeParticle(Game *game, int x, int y, int amount=1);
 
 //Other Globals
 Game game;
@@ -122,6 +133,7 @@ int main(void) {
 			check_mouse(&e, &game);
 			done = check_keys(&e, &game);
 		}
+		makeParticle(&game, NATURAL_FLOW_X, NATURAL_FLOW_Y, NATURAL_FLOW_AMOUNT);
 		movement(&game);
 		render(&game);
 		glXSwapBuffers(dpy, win);
@@ -182,21 +194,22 @@ void init_opengl(void) {
 	glClearColor(0.1, 0.1, 0.1, 1.0);
 }
 #define rnd() (float)rand() / (float)RAND_MAX
-void makeParticle(Game *game, int x, int y) {
-	if (game->n >= MAX_PARTICLES){
+void makeParticle(Game *game, int x, int y, int amount) {
+	if (game->n >= MAX_PARTICLES - amount){
 		return;
 	}
-
 	std::cout << "makeParticle() " << x << " " << y << std::endl;
-	//position of particle
-	//Particle *p = &game->particle[game->n];
-	Particle *p = new Particle();
-	(game->particles).push_back(p);
-	p->s.center.x = x;
-	p->s.center.y = WINDOW_HEIGHT - y;
-	p->velocity.y = rnd()*2 - 1.0;
-	p->velocity.x = rnd()*2 - 1.0;
-	game->n++;
+	for(int i = 0; i < amount; i++){
+		//position of particle
+		//Particle *p = &game->particle[game->n];
+		Particle *p = new Particle();
+		(game->particles).push_back(p);
+		p->s.center.x = x;
+		p->s.center.y = WINDOW_HEIGHT - y;
+		p->velocity.y = rnd()*2 - 1.0;
+		p->velocity.x = rnd()*2 - 1.0;
+		game->n++;
+	}
 }
 
 void check_mouse(XEvent *e, Game *game) {
@@ -230,9 +243,7 @@ void check_mouse(XEvent *e, Game *game) {
 		savey = e->xbutton.y;
 		if (++n < 10)
 			return;
-		for(int i = 0; i < 10; i++){
-			makeParticle(game, e->xbutton.x, e->xbutton.y);
-		}
+		makeParticle(game, e->xbutton.x, e->xbutton.y);
 	}
 }
 
@@ -291,25 +302,41 @@ void movement(Game *game) {
 }
 
 void render(Game *game) {
-	float w, h;
+	float w, h, r;
 	glClear(GL_COLOR_BUFFER_BIT);
 	//Draw shapes...
 
 	//draw box
 	for(std::list<Shape*>::iterator it = game->shapes.begin(); it != game->shapes.end(); it++){
 		Shape *s = *it;
-		glColor3ub(90,140,90);
-		glPushMatrix();
-		glTranslatef(s->center.x, s->center.y, s->center.z);
-		w = s->width;
-		h = s->height;
-		glBegin(GL_QUADS);
-		glVertex2i(-w,-h);
-		glVertex2i(-w, h);
-		glVertex2i( w, h);
-		glVertex2i( w,-h);
-		glEnd();
-		glPopMatrix();
+		if(s->isCircle){
+			glColor3ub(90,140,90);
+			glPushMatrix();
+			glTranslatef(s->center.x, s->center.y, s->center.z);
+			r = s->radius;
+			glBegin(GL_LINE_LOOP);
+			for(int i = 0; i < r; i++){
+				for(int j = 0; j < 360; j++){
+					//Take center, then find each point on the edge
+					glVertex2f(cos(j * (3.14/180))*(r - i), sin(j * (3.14/180))*(r - i));
+				}
+			}
+			glEnd();
+			glPopMatrix();
+		}else{
+			glColor3ub(90,140,90);
+			glPushMatrix();
+			glTranslatef(s->center.x, s->center.y, s->center.z);
+			w = s->width;
+			h = s->height;
+			glBegin(GL_QUADS);
+			glVertex2i(-w,-h);
+			glVertex2i(-w, h);
+			glVertex2i( w, h);
+			glVertex2i( w,-h);
+			glEnd();
+			glPopMatrix();
+		}
 	}
 	//draw all particles here
 	//for(int i = 0; i < game->n; i++){
