@@ -63,6 +63,7 @@ struct Shape {
 	float width, height;
 	float radius;
 	Vec center;
+	bool isCircle;
 };
 
 struct Particle {
@@ -72,19 +73,20 @@ struct Particle {
 
 class Game {
 	public:
-	Shape box;
-	//Particle particle[MAX_PARTICLES];
-	std::list<Particle*> particles;
-	int n;
-	Game(){
-	    	
-		n=0;
-		//declare a box shape
-		box.width = 100;
-		box.height = 10;
-		box.center.x = 120 + 5*65;
-		box.center.y = 500 - 5*60;
-	}
+		std::list<Particle*> particles;
+		std::list<Shape*> shapes;
+		int n;
+		Game(){
+			n=0;
+			//declare a box shape
+			Shape *newBox = new Shape();
+			newBox->width = 100;
+			newBox->height = 10;
+			newBox->center.x = 120 + 5*65;
+			newBox->center.y = 500 - 5*60;
+			newBox->isCircle = false;
+			shapes.push_back(newBox);
+		}
 };
 
 //Function prototypes
@@ -95,7 +97,11 @@ void check_mouse(XEvent *e, Game *game);
 int check_keys(XEvent *e, Game *game);
 void movement(Game *game);
 void render(Game *game);
-bool isInShape(Shape &shape, float x, float y, float z=0, bool square=true, bool inclusive=true);
+bool isInShape(float x, float y, float z=0, bool inclusive=true);
+Shape *getContainingShape(float x, float y, float z=0, bool inclusive=true);
+
+//Other Globals
+Game game;
 
 int main(void) {
 	int done=0;
@@ -103,7 +109,6 @@ int main(void) {
 	initXWindows();
 	init_opengl();
 	//declare game object
-	Game game;
 
 	//start animation
 	while (!done) {
@@ -176,7 +181,7 @@ void init_opengl(void) {
 void makeParticle(Game *game, int x, int y) {
 	if (game->n >= MAX_PARTICLES){
 		return;
-	}else if(isInShape(game->box, x, y)){
+	}else if(isInShape((float) x, (float) y)){
 		std::cout << "makeParticle() cursor is inside box" << std::endl;
 		return;
 	}
@@ -258,13 +263,13 @@ void movement(Game *game) {
 		p->s.center.y += p->velocity.y;
 
 		//check for collision with shapes...
-		Shape *s = &game->box;
-		//if(p->s.center.y < s->center.y + s->height && p->s.center.x > s->center.x - s->width && p->s.center.x < s->center.x + s->width){
-		if(isInShape(game->box, p->s.center.x, p->s.center.y)){
-	    		p->s.center.y = s->center.y + s->height;
-			p->velocity.y *= -0.5;
-			//p->s.center.x += p->velocity.x;
-			//p->s.center.y += p->velocity.y;
+		Shape *s = getContainingShape(p->s.center.x, p->s.center.y);
+		if(s != nullptr){
+			if(s->isCircle){
+			}else{
+	    			p->s.center.y = s->center.y + s->height;
+				p->velocity.y *= -0.5;
+			}
 		}
 		//check for off-screen
 		if (p->s.center.y < 0.0 || p->s.center.y > WINDOW_HEIGHT) {
@@ -285,21 +290,21 @@ void render(Game *game) {
 	//Draw shapes...
 
 	//draw box
-	Shape *s;
-	glColor3ub(90,140,90);
-	s = &game->box;
-	glPushMatrix();
-	glTranslatef(s->center.x, s->center.y, s->center.z);
-	w = s->width;
-	h = s->height;
-	glBegin(GL_QUADS);
+	for(std::list<Shape*>::iterator it = game->shapes.begin(); it != game->shapes.end(); it++){
+		Shape *s = *it;
+		glColor3ub(90,140,90);
+		glPushMatrix();
+		glTranslatef(s->center.x, s->center.y, s->center.z);
+		w = s->width;
+		h = s->height;
+		glBegin(GL_QUADS);
 		glVertex2i(-w,-h);
 		glVertex2i(-w, h);
 		glVertex2i( w, h);
 		glVertex2i( w,-h);
-	glEnd();
-	glPopMatrix();
-
+		glEnd();
+		glPopMatrix();
+	}
 	//draw all particles here
 	//for(int i = 0; i < game->n; i++){
 	for(std::list<Particle*>::iterator it = game->particles.begin(); it != game->particles.end(); it++){
@@ -319,45 +324,47 @@ void render(Game *game) {
 	}
 }
 
-
-
-bool isInShape(Shape &shape, float x, float y, float z, bool square, bool inclusive) {
-	if(square) {
-		//Square
-		float leftBound =  shape.center.x - (shape.width);
-		float rightBound = shape.center.x + (shape.width);
-		float upperBound = shape.center.y + (shape.height);
-		float lowerBound = shape.center.y - (shape.height);
-		if(inclusive) {
-			//Borders are considered part of the shape
-			if(x < leftBound) {
-				return false;
-			}else if(x > rightBound) {
-				return false;
-			}else if(y > upperBound) {
-				return false;
-			}else if(y < lowerBound) {
-				return false;
+Shape* getContainingShape(float x, float y, float z, bool inclusive) {
+	for(std::list<Shape*>::iterator it = game.shapes.begin(); it != game.shapes.end(); it++){
+		if(!(*it)->isCircle) {
+			//Square
+			Shape shape = *(*it);
+			float leftBound =  shape.center.x - (shape.width);
+			float rightBound = shape.center.x + (shape.width);
+			float upperBound = shape.center.y + (shape.height);
+			float lowerBound = shape.center.y - (shape.height);
+			if(inclusive) {
+				//Borders are considered part of the shape
+				if(x < leftBound) {
+					continue;
+				}else if(x > rightBound) {
+					continue;
+				}else if(y > upperBound) {
+					continue;
+				}else if(y < lowerBound) {
+					continue;
+				}else {
+					return *it;
+				}
 			}else {
-				return true;
+				//Borders are not considered part of the shape
+				if(x <= leftBound) {
+					continue;
+				}else if(x >= rightBound) {
+					continue;
+				}else if(y >= upperBound) {
+					continue;
+				}else if(y <= lowerBound) {
+					continue;
+				}else {
+					return *it;
+				}
 			}
 		}else {
-			//Borders are not considered part of the shape
-			if(x <= leftBound) {
-				return false;
-			}else if(x >= rightBound) {
-				return false;
-			}else if(y >= upperBound) {
-				return false;
-			}else if(y <= lowerBound) {
-				return false;
-			}else {
-				return true;
-			}
+			//Circle
+			//TODO
+			return nullptr;
 		}
-	}else {
-		//Circle
-		//TODO
-		return false;
 	}
+	return nullptr;
 }

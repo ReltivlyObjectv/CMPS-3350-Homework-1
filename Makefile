@@ -4,10 +4,10 @@
 all: lab1
 
 lab1: lab1.cpp
-	g++ lab1.cpp -Wall -olab1 -lX11 -lGL -lGLU -lm 
+	g++ lab1.cpp -Wall -lX11 -lGL -lGLU -lm -std=c++11
 
 mac: lab1.cpp
-	g++ lab1.cpp -Wall -olab1 -lX11 -lGL -lGLU -lm -I/usr/X11R6/include -L/usr/X11R6/lib 
+	g++ lab1.cpp -Wall -lX11 -lGL -lGLU -lm -std=c++11 -stdlib=libc++ -I/usr/X11R6/include -L/usr/X11R6/lib
 
 clean:
 	rm -f lab1
