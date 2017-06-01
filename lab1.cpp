@@ -34,6 +34,7 @@
 //
 #include <iostream>
 #include <cstdlib>
+#include <list>
 #include <ctime>
 #include <cstring>
 #include <cmath>
@@ -71,9 +72,11 @@ struct Particle {
 class Game {
 	public:
 	Shape box;
-	Particle particle[MAX_PARTICLES];
+	//Particle particle[MAX_PARTICLES];
+	std::list<Particle*> particles;
 	int n;
 	Game(){
+	    	
 		n=0;
 		//declare a box shape
 		box.width = 100;
@@ -178,7 +181,9 @@ void makeParticle(Game *game, int x, int y) {
 	}
 	std::cout << "makeParticle() " << x << " " << y << std::endl;
 	//position of particle
-	Particle *p = &game->particle[game->n];
+	//Particle *p = &game->particle[game->n];
+	Particle *p = new Particle();
+	(game->particles).push_back(p);
 	p->s.center.x = x;
 	p->s.center.y = WINDOW_HEIGHT - y;
 	p->velocity.y = rnd()*2 - 1.0;
@@ -239,23 +244,21 @@ int check_keys(XEvent *e, Game *game) {
 }
 
 void movement(Game *game) {
-	Particle *p;
 
 	if (game->n <= 0)
 		return;
-	for(int i = 0; i < game->n; i++){
-		p = &game->particle[i];
+	//for(int i = 0; i < game->n; i++){
+	for(std::list<Particle*>::iterator it = game->particles.begin(); it != game->particles.end(); ){
+		Particle *p = *it;
 		p->velocity.y -= GRAVITY;
 		p->s.center.x += p->velocity.x;
 		p->s.center.y += p->velocity.y;
 
 		//check for collision with shapes...
 		Shape *s = &game->box;
-		if(p->s.center.y < s->center.y + s->height &&
-				p->s.center.x > s->center.x - s->width &&
-				p->s.center.x < s->center.x + s->width
-				){
-		    p->s.center.y = s->center.y + s->height;
+		//if(p->s.center.y < s->center.y + s->height && p->s.center.x > s->center.x - s->width && p->s.center.x < s->center.x + s->width){
+		if(isInShape(game->box, p->s.center.x, p->s.center.y)){
+	    		p->s.center.y = s->center.y + s->height;
 			p->velocity.y *= -0.5;
 			//p->s.center.x += p->velocity.x;
 			//p->s.center.y += p->velocity.y;
@@ -263,8 +266,12 @@ void movement(Game *game) {
 		//check for off-screen
 		if (p->s.center.y < 0.0 || p->s.center.y > WINDOW_HEIGHT) {
 			std::cout << "off screen" << std::endl;
-			game->particle[i] = game->particle[(game->n)-1];
+			//game->particle[i] = game->particle[(game->n)-1];
+			it++;
+			game->particles.remove(p);
 			(game->n)--;
+		}else{
+			it++;
 		}
 	}
 }
@@ -291,10 +298,12 @@ void render(Game *game) {
 	glPopMatrix();
 
 	//draw all particles here
-	for(int i = 0; i < game->n; i++){
-		glPushMatrix();
+	//for(int i = 0; i < game->n; i++){
+	for(std::list<Particle*>::iterator it = game->particles.begin(); it != game->particles.end(); it++){
+		Particle *p = *it;
+	    	glPushMatrix();
 		glColor3ub(150,160,220);
-		Vec *c = &game->particle[i].s.center;
+		Vec *c = &(p->s.center);
 		w = 2;
 		h = 2;
 		glBegin(GL_QUADS);
@@ -312,10 +321,10 @@ void render(Game *game) {
 bool isInShape(Shape &shape, float x, float y, float z, bool square, bool inclusive) {
 	if(square) {
 		//Square
-		float leftBound =  shape.center.x - (shape.width / 2);
-		float rightBound = shape.center.x + (shape.width / 2);
-		float upperBound = shape.center.y + (shape.height / 2);
-		float lowerBound = shape.center.y - (shape.height / 2);
+		float leftBound =  shape.center.x - (shape.width);
+		float rightBound = shape.center.x + (shape.width);
+		float upperBound = shape.center.y + (shape.height);
+		float lowerBound = shape.center.y - (shape.height);
 		if(inclusive) {
 			//Borders are considered part of the shape
 			if(x < leftBound) {
