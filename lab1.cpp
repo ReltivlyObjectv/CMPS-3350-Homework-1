@@ -47,6 +47,7 @@
 
 #define MAX_PARTICLES 1000
 #define GRAVITY 0.1
+#define WATER_FLOW 0.01
 
 //X Windows variables
 Display *dpy;
@@ -250,7 +251,9 @@ void movement(Game *game) {
 	//for(int i = 0; i < game->n; i++){
 	for(std::list<Particle*>::iterator it = game->particles.begin(); it != game->particles.end(); ){
 		Particle *p = *it;
+		//Natural Forces
 		p->velocity.y -= GRAVITY;
+		p->velocity.x += WATER_FLOW;
 		p->s.center.x += p->velocity.x;
 		p->s.center.y += p->velocity.y;
 
