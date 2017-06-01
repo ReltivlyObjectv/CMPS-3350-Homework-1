@@ -198,7 +198,7 @@ void makeParticle(Game *game, int x, int y, int amount) {
 	if (game->n >= MAX_PARTICLES - amount){
 		return;
 	}
-	std::cout << "makeParticle() " << x << " " << y << std::endl;
+	//std::cout << "makeParticle() " << x << " " << y << std::endl;
 	for(int i = 0; i < amount; i++){
 		//position of particle
 		//Particle *p = &game->particle[game->n];
@@ -287,7 +287,7 @@ void movement(Game *game) {
 		}
 		//check for off-screen
 		if (p->s.center.y < 0.0 || p->s.center.y > WINDOW_HEIGHT) {
-			std::cout << "off screen" << std::endl;
+			//std::cout << "off screen" << std::endl;
 			//game->particle[i] = game->particle[(game->n)-1];
 			it++;
 			game->particles.remove(p);
