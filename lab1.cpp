@@ -47,7 +47,7 @@
 
 #define MAX_PARTICLES 5000
 #define GRAVITY 0.1
-#define WATER_FLOW 0.005
+#define WATER_FLOW 0.0025
 
 #define NATURAL_FLOW_Y 50
 #define NATURAL_FLOW_X 100
@@ -196,7 +196,7 @@ void init_opengl(void) {
 #define rnd() (float)rand() / (float)RAND_MAX
 void makeParticle(Game *game, int x, int y, int amount) {
 	if (game->n >= MAX_PARTICLES - amount){
-		return;
+		amount = MAX_PARTICLES - game->n;
 	}
 	//std::cout << "makeParticle() " << x << " " << y << std::endl;
 	for(int i = 0; i < amount; i++){
