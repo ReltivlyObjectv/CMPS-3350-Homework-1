@@ -1,6 +1,6 @@
-//modified by:
-//date:
-//purpose:
+//modified by: Christian Russell
+//date: May 31
+//purpose: Homework 1
 //
 //cs3350 Summer 2017 Homework-1
 //author: Gordon Griesel
@@ -45,13 +45,13 @@
 #define WINDOW_WIDTH  800
 #define WINDOW_HEIGHT 600
 
-#define MAX_PARTICLES 5000
+#define MAX_PARTICLES 15000
 #define GRAVITY 0.1
 #define WATER_FLOW 0.0025
 
-#define NATURAL_FLOW_Y 50
+#define NATURAL_FLOW_Y 25
 #define NATURAL_FLOW_X 100
-#define NATURAL_FLOW_AMOUNT 25
+#define NATURAL_FLOW_AMOUNT 50
 
 //X Windows variables
 Display *dpy;
@@ -87,17 +87,16 @@ class Game {
 				Shape *box = new Shape();
 				box->width = 100;
 				box->height = 20;
-				//newBox->center.x = 120 + 5*65;
-				//newBox->center.y = 500 - 5*60;
 				box->center.x = 120 + (100 * i);
 				box->center.y = 500 - (75 * i);
 				box->isCircle = false;
 				shapes.push_back(box);
+
 			}
 			Shape *circle = new Shape();
 			circle->radius = 150;
 			circle->isCircle = true;
-			circle->center.x = 800;
+			circle->center.x = 700;
 			circle->center.y = 0;
 			shapes.push_back(circle);
 		}
@@ -114,6 +113,8 @@ void render(Game *game);
 bool isInShape(float x, float y, float z=0, bool inclusive=true);
 Shape *getContainingShape(float x, float y, float z=0, bool inclusive=true);
 void makeParticle(Game *game, int x, int y, int amount=1);
+void applyCircleRebound(Particle *p, Shape *s);
+
 
 //Other Globals
 Game game;
@@ -277,7 +278,7 @@ void movement(Game *game) {
 		Shape *s = getContainingShape(p->s.center.x, p->s.center.y);
 		if(s != nullptr){
 			if(s->isCircle){
-				//TODO
+				applyCircleRebound(p, s);
 			}else{
 				if(p->s.center.y > s->center.y){
 	    				p->s.center.y = s->center.y + s->height;
@@ -304,6 +305,8 @@ void render(Game *game) {
 	//Draw shapes...
 
 	//draw box
+	//int boxPos = 0;
+	std::string boxTitles[] = {"Requirements","Design","Coding","Testing","Maintenance"};
 	for(std::list<Shape*>::iterator it = game->shapes.begin(); it != game->shapes.end(); it++){
 		Shape *s = *it;
 		if(s->isCircle){
@@ -311,16 +314,18 @@ void render(Game *game) {
 			glPushMatrix();
 			glTranslatef(s->center.x, s->center.y, s->center.z);
 			r = s->radius;
-			glBegin(GL_LINE_LOOP);
-			for(int i = 0; i < r; i++){
-				for(int j = 0; j < 360; j++){
+			//glBegin(GL_LINE_LOOP);
+			glBegin(GL_TRIANGLE_FAN);
+			//for(int i = 0; i < r; i++){
+				for(int j = 0; j < 40; j++){
 					//Take center, then find each point on the edge
-					glVertex2f(cos(j * (3.14/180))*(r - i), sin(j * (3.14/180))*(r - i));
+					glVertex2f(cos(j * ((3.14*2)/40))*(r), sin(j * ((3.14*2)/40))*(r));
 				}
-			}
+			//}
 			glEnd();
 			glPopMatrix();
 		}else{
+			//Draw Box
 			glColor3ub(90,140,90);
 			glPushMatrix();
 			glTranslatef(s->center.x, s->center.y, s->center.z);
@@ -333,6 +338,12 @@ void render(Game *game) {
 			glVertex2i( w,-h);
 			glEnd();
 			glPopMatrix();
+			//Draw Label
+			for(int i = 0; i < boxTitles[i].size(); i++){
+				//TODO Render each letter
+				//std::cout << boxTitles[boxPos];
+			}
+			//boxPos++;
 		}
 	}
 	//draw all particles here
@@ -394,17 +405,53 @@ Shape* getContainingShape(float x, float y, float z, bool inclusive) {
 			//Circle
 			Shape shape = *(*it);
 			float radius = shape.radius;
-			float length = sqrt(pow(x + shape.center.x, 2) + pow(y + shape.center.y, 2));
+			float length = sqrt(pow(x - shape.center.x, 2) + pow(y - shape.center.y, 2));
 			if(inclusive){
 				if(radius >= length){
+					std::cout << "In circle.";
 					return *it;
 				}
 			}else{
 				if(radius > length){
 					return *it;
+					std::cout << "In circle.";
 				}
 			}
 		}
 	}
 	return nullptr;
+}
+
+void applyCircleRebound(Particle *p, Shape *s){
+	std::cout << "Applying physics to circle. " << std::endl;
+	//Triangle dimensions
+	float triangleBase = fabs(s->center.x - p->s.center.x);
+	float triangleHeight = fabs(s->center.y - p->s.center.y);
+	float triangleDiameter = sqrt(pow(triangleBase, 2) + pow(triangleHeight, 2));
+	//Triangle angle
+	float sin = (triangleHeight / triangleDiameter);
+	float degrees = 1.0 / sin;
+	//Use angle from bottom of screen to calculate bounce
+	if(p->s.center.x < s->center.x){
+		if(degrees > 45.0){
+			p->velocity.y *= -0.45;
+			if(p->velocity.x > 0){
+				p->velocity.x *= -0.45;
+			}
+		}else if(degrees < 45.0){
+			p->velocity.y *= -0.50;
+			if(p->velocity.x > 0){
+				p->velocity.x *= -0.50;
+			}
+		}else{
+			p->velocity.y *= -0.70;
+			if(p->velocity.x > 0){
+				p->velocity.x *= -0.30;
+			}
+		}
+
+	}else{
+		//landed on top right of circle
+		p->velocity.y *= -0.45;
+	}
 }
