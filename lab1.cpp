@@ -56,6 +56,10 @@
 
 #define BOUNCE_PENALTY 3
 
+#define TEXT_WIDTH 11.5
+#define TEXT_HEIGHT 15
+#define TEXT_FONT GLUT_BITMAP_TIMES_ROMAN_24
+
 //X Windows variables
 Display *dpy;
 Window win;
@@ -470,9 +474,12 @@ void applyCircleRebound(Particle *p, Shape *s){
 	}
 }
 void writeText(Shape *s, std::string text){
-	glRasterPos2f(s->center.x, s->center.y);
+	float textWidth = TEXT_WIDTH * text.length();
+	float textBegin = s->center.x - (textWidth / 2);
+	float textTop = s->center.y - (TEXT_HEIGHT / 2);
+	glRasterPos2f(textBegin, textTop);
 	glColor3ub(255,255,0);
 	for(int i = 0; i < text.length(); i++){
-		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, text[i]);
+		glutBitmapCharacter(TEXT_FONT, text[i]);
 	}
 }
