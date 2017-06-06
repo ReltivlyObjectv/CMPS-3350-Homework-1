@@ -54,6 +54,8 @@
 #define NATURAL_FLOW_X 100
 #define NATURAL_FLOW_AMOUNT 50
 
+#define BOUNCE_PENALTY 3
+
 //X Windows variables
 Display *dpy;
 Window win;
@@ -452,6 +454,19 @@ void applyCircleRebound(Particle *p, Shape *s){
 	}else{
 		//landed on top right of circle
 		p->velocity.y *= -0.45;
+	}
+	//Apply penalty to remove from circle
+	float slope = (p->s.center.y - s->center.y)/(p->s.center.x - s->center.x);
+	while(getContainingShape(p->s.center.x, p->s.center.y, 0, false) == s){
+		if(p->s.center.x > s->center.x){
+			//p is to the right of circle's center
+			p->s.center.x += BOUNCE_PENALTY;
+			p->s.center.y += (1 * (BOUNCE_PENALTY * slope)) > BOUNCE_PENALTY ? BOUNCE_PENALTY :1 * (BOUNCE_PENALTY * slope) ;
+		}else{
+			//p is to the left of circle's center
+			p->s.center.x -= BOUNCE_PENALTY;
+			p->s.center.y += (-1 * (BOUNCE_PENALTY * slope)) > BOUNCE_PENALTY ? BOUNCE_PENALTY :1 * (BOUNCE_PENALTY * slope) ;
+		}
 	}
 }
 void writeText(Shape *s, std::string text){
