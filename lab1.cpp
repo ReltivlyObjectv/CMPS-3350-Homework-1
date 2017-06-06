@@ -41,6 +41,7 @@
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 #include <GL/glx.h>
+#include <GLUT/glut.h>
 
 #define WINDOW_WIDTH  800
 #define WINDOW_HEIGHT 600
@@ -114,6 +115,7 @@ bool isInShape(float x, float y, float z=0, bool inclusive=true);
 Shape *getContainingShape(float x, float y, float z=0, bool inclusive=true);
 void makeParticle(Game *game, int x, int y, int amount=1);
 void applyCircleRebound(Particle *p, Shape *s);
+void writeText(Shape *s, std::string text);
 
 
 //Other Globals
@@ -303,9 +305,7 @@ void render(Game *game) {
 	float w, h, r;
 	glClear(GL_COLOR_BUFFER_BIT);
 	//Draw shapes...
-
-	//draw box
-	//int boxPos = 0;
+	int boxPos = 0;
 	std::string boxTitles[] = {"Requirements","Design","Coding","Testing","Maintenance"};
 	for(std::list<Shape*>::iterator it = game->shapes.begin(); it != game->shapes.end(); it++){
 		Shape *s = *it;
@@ -340,10 +340,9 @@ void render(Game *game) {
 			glPopMatrix();
 			//Draw Label
 			for(int i = 0; i < boxTitles[i].size(); i++){
-				//TODO Render each letter
-				//std::cout << boxTitles[boxPos];
+				writeText(*it, boxTitles[boxPos]);
 			}
-			//boxPos++;
+			boxPos++;
 		}
 	}
 	//draw all particles here
@@ -408,13 +407,13 @@ Shape* getContainingShape(float x, float y, float z, bool inclusive) {
 			float length = sqrt(pow(x - shape.center.x, 2) + pow(y - shape.center.y, 2));
 			if(inclusive){
 				if(radius >= length){
-					std::cout << "In circle.";
+					//std::cout << "In circle.";
 					return *it;
 				}
 			}else{
 				if(radius > length){
 					return *it;
-					std::cout << "In circle.";
+					//std::cout << "In circle.";
 				}
 			}
 		}
@@ -423,7 +422,7 @@ Shape* getContainingShape(float x, float y, float z, bool inclusive) {
 }
 
 void applyCircleRebound(Particle *p, Shape *s){
-	std::cout << "Applying physics to circle. " << std::endl;
+	//std::cout << "Applying physics to circle. " << std::endl;
 	//Triangle dimensions
 	float triangleBase = fabs(s->center.x - p->s.center.x);
 	float triangleHeight = fabs(s->center.y - p->s.center.y);
@@ -453,5 +452,12 @@ void applyCircleRebound(Particle *p, Shape *s){
 	}else{
 		//landed on top right of circle
 		p->velocity.y *= -0.45;
+	}
+}
+void writeText(Shape *s, std::string text){
+	glRasterPos2f(s->center.x, s->center.y);
+	glColor3ub(255,255,0);
+	for(int i = 0; i < text.length(); i++){
+		glutBitmapCharacter(GLUT_BITMAP_TIMES_ROMAN_24, text[i]);
 	}
 }
