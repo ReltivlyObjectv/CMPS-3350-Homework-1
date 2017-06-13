@@ -3,7 +3,7 @@
 
 all: hw1
 
-lab1: hw1.cpp
+hw1: hw1.cpp
 	g++ hw1.cpp -Wall -lX11 -lGL -lGLU -lm -std=c++11 -o hw1
 
 mac: hw1.cpp

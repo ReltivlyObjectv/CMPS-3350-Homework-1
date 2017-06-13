@@ -41,7 +41,7 @@
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 #include <GL/glx.h>
-#include <GLUT/glut.h>
+//#include <GLUT/glut.h>
 
 #define WINDOW_WIDTH  800
 #define WINDOW_HEIGHT 600
@@ -284,7 +284,7 @@ void movement(Game *game) {
 
 		//check for collision with shapes...
 		Shape *s = getContainingShape(p->s.center.x, p->s.center.y);
-		if(s != nullptr){
+		if(s != NULL){
 			if(s->isCircle){
 				applyCircleRebound(p, s);
 			}else{
@@ -424,7 +424,7 @@ Shape* getContainingShape(float x, float y, float z, bool inclusive) {
 			}
 		}
 	}
-	return nullptr;
+	return NULL;
 }
 
 void applyCircleRebound(Particle *p, Shape *s){
@@ -474,6 +474,7 @@ void applyCircleRebound(Particle *p, Shape *s){
 	}
 }
 void writeText(Shape *s, std::string text){
+	/*
 	float textWidth = TEXT_WIDTH * text.length();
 	float textBegin = s->center.x - (textWidth / 2);
 	float textTop = s->center.y - (TEXT_HEIGHT / 2);
@@ -482,4 +483,5 @@ void writeText(Shape *s, std::string text){
 	for(int i = 0; i < text.length(); i++){
 		glutBitmapCharacter(TEXT_FONT, text[i]);
 	}
+	*/
 }
