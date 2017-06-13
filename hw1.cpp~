@@ -354,7 +354,7 @@ void render(Game *game) {
 			unsigned int c = 0x00ffffff;
 			Rect r;
 			r.bot = s->center.y - (s->height / 2);
-			r.left = s->center.x - (s->width - (s->height / 2));
+			r.left = s->center.x - (s->width);
 			r.center = 0;
 			ggprint16(&r, 16, c, boxTitles[boxPos].c_str());
 			boxPos++;
