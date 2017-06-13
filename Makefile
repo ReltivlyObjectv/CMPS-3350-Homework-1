@@ -9,4 +9,4 @@ hw1: hw1.cpp
 clean:
 	rm -f hw1
 	rm -f *.o
-
+	rm -f *~

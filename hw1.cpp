@@ -121,8 +121,6 @@ bool isInShape(float x, float y, float z=0, bool inclusive=true);
 Shape *getContainingShape(float x, float y, float z=0, bool inclusive=true);
 void makeParticle(Game *game, int x, int y, int amount=1);
 void applyCircleRebound(Particle *p, Shape *s);
-void writeText(Shape *s, std::string text);
-
 
 //Other Globals
 Game game;
@@ -350,8 +348,7 @@ void render(Game *game) {
 			glBindTexture(GL_TEXTURE_2D, 0);
 			glDisable(GL_ALPHA_TEST);
 			//Draw Label
-			glColor3ub(255,255,0);
-			unsigned int c = 0x00ffffff;
+			unsigned int c = 0x00ffff00;
 			Rect r;
 			r.bot = s->center.y - (s->height / 2);
 			r.left = s->center.x - (s->width - (s->height / 2));
@@ -481,28 +478,4 @@ void applyCircleRebound(Particle *p, Shape *s){
 			p->s.center.y += (-1 * (BOUNCE_PENALTY * slope)) > BOUNCE_PENALTY ? BOUNCE_PENALTY :1 * (BOUNCE_PENALTY * slope) ;
 		}
 	}
-}
-void writeText(Shape *s, std::string text){
-	//r.top = s->center.x + (s->width / 2);
-	//r.right = s->center.y + (s->height / 2);
-	/*
-	int left;
-	int top;
-	int right;
-	int bot;
-	int width;
-	int height;
-	int center;
-	int centerx;
-	int centery;
-	*/
-	/*
-	float textWidth = TEXT_WIDTH * text.length();
-	float textBegin = s->center.x - (textWidth / 2);
-	float textTop = s->center.y - (TEXT_HEIGHT / 2);
-	glRasterPos2f(textBegin, textTop);
-	for(int i = 0; i < text.length(); i++){
-		glutBitmapCharacter(TEXT_FONT, text[i]);
-	}
-	*/
 }
