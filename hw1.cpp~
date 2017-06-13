@@ -362,7 +362,7 @@ void render(Game *game) {
 	for(std::list<Particle*>::iterator it = game->particles.begin(); it != game->particles.end(); it++){
 		Particle *p = *it;
 	    	glPushMatrix();
-		glColor3ub((rand() % 30) + 150,(rand() % 50) + 160,(rand() % 35) + 220);
+		glColor3ub((rand() % 50) + 150,(rand() % 50) + 160,(rand() % 35) + 220);
 		Vec *c = &(p->s.center);
 		w = 2;
 		h = 2;
